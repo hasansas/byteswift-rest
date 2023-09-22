@@ -1,0 +1,334 @@
+{
+	"info": {
+		"_postman_id": "5bae7933-1856-4aac-b8c2-5fceaf1d76b6",
+		"name": "NODE STARTER - RESTful API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3251103"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "3K9sonYW7dZNFBjfCsQnGGFEBNY4inHzSdWv5oLioQInDmMtfALxSaAo42NXABet",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "email",
+									"value": "admin@dev.edumo.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "6D7953656372337450617373",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/auth/login/:role",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"login",
+								":role"
+							],
+							"variable": [
+								{
+									"key": "role",
+									"value": "admin",
+									"description": "developer, superadmin, admin, user"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "3K9sonYW7dZNFBjfCsQnGGFEBNY4inHzSdWv5oLioQInDmMtfALxSaAo42NXABet"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "3K9sonYW7dZNFBjfCsQnGGFEBNY4inHzSdWv5oLioQInDmMtfALxSaAo42NXABet"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/auth/logout/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"logout",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "3K9sonYW7dZNFBjfCsQnGGFEBNY4inHzSdWv5oLioQInDmMtfALxSaAo42NXABet"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "john wick",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "johnwick@dev.edumo.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "aaaaaaaA1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/users/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm Register",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "3K9sonYW7dZNFBjfCsQnGGFEBNY4inHzSdWv5oLioQInDmMtfALxSaAo42NXABet"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "email",
+									"value": "johnwick@dev.edumo.com",
+									"type": "text"
+								},
+								{
+									"key": "code",
+									"value": "729660",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/users/register/confirm",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"register",
+								"confirm"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Check Health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/__health",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"__health"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "x-api-key",
+			"value": "3K9sonYW7dZNFBjfCsQnGGFEBNY4inHzSdWv5oLioQInDmMtfALxSaAo42NXABet"
+		},
+		{
+			"key": "adminToken",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI3NmRiYzI2LTQwNjItNGE4ZS05NDQwLTIxYmRhNGE0OTFhNCIsInJvbGUiOiJhZG1pbiIsImp0aSI6ImI3NmRiYzI2LTQwNjItNGE4ZS05NDQwLTIxYmRhNGE0OTFhNCIsImlhdCI6MTY4MDUzMTc5MSwiZXhwIjoxNjgxMDU3MzkxfQ.Guvf4jKtpbk_t1W1ZSjE9j50RP0cDesii1jk3intebo"
+		}
+	]
+}
