@@ -6,12 +6,14 @@
 
 import axios from 'axios'
 // import { Parser } from '@json2csv/plainjs'
-import { Readable } from 'stream'
+// import { Readable } from 'stream'
 // import { Transform } from '@json2csv/node'
 
-// const fs = require('fs')
+import { stringify } from 'csv-stringify'
+
+const fs = require('fs')
 const FormData = require('form-data')
-// const path = require('path')
+const path = require('path')
 
 class QontakController {
   constructor ({ req, res }) {
@@ -33,50 +35,70 @@ class QontakController {
     try {
       const vm = this
 
-      // api url
-      const _url = 'https://service-chat.qontak.com/api/open/v1/contacts/contact_lists/async'
+      // validate request
+      const errors = EXPRESS_VALIDATOR.validationResult(this.request)
+      if (!errors.isEmpty()) {
+        const _error = {
+          errors: errors.array()
+        }
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: _error })
+      }
+
+      //  body
+      const name = this.request.body.name
+      const contacts = this.request.body.contacts
+
+      // tmp path
+      const tmpPath = path.join(ROOT_DIR, '/.tmp')
+      if (!fs.existsSync(tmpPath)) {
+        fs.mkdirSync(tmpPath)
+      }
+
+      // create csv
+      const csvName = 'tmp-contacts.csv'
+      const csvFilePath = tmpPath + '/' + csvName
+      const writableStream = fs.createWriteStream(csvFilePath)
+
+      const columns = [
+        'phone_number',
+        'full_name',
+        'customer_name',
+        'company'
+      ]
+      const stringifier = stringify({ header: true, columns: columns })
+
+      // add contact
+      for (let index = 0; index < contacts.length; index++) {
+        const _contact = contacts[index]
+        stringifier.write(
+          [
+            _contact.phone_number,
+            _contact.full_name,
+            _contact.customer_name,
+            _contact.company
+          ]
+        )
+      }
+      stringifier.pipe(writableStream)
+
+      // Form
+      const form = new FormData()
+      form.append('name', name)
+      form.append('source_type', 'spreadsheet')
+      form.append('file', fs.createReadStream(csvFilePath))
 
       // header
       axios.defaults.headers.common.Accept = 'application/json'
       axios.defaults.headers.common.Authorization = 'Bearer ' + this.qontakToken
 
-      // body
-      // const tmpPath = path.join(ROOT_DIR, '/.tmp')
-      const name = this.request.body.name
-
-      const data = [
-        {
-          phone_number: '0987654321',
-          full_name: 'Baba Yaga',
-          customer_name: '',
-          company: ''
-        }
-      ]
-      const dataStream = Readable.from(data)
-
-      // const json2csvParser = new Transform()
-
-      console.log(dataStream)
-      // const csv = ''
-      // dataStream
-      //   .pipe(json2csvParser)
-      // .on('data', chunk => (csv += chunk.toString()))
-      // .on('end', () => console.log(csv))
-      // .on('error', err => console.error(err))
-
-      // const json2csvParser = new Parser()
-      // const csv = json2csvParser.parse(data)
-
-      // const contacts = this.request.body.contacts
-
-      const form = new FormData()
-      form.append('name', name)
-      form.append('source_type', 'spreadsheet')
-      form.append('file', dataStream)
-      // form.append('file', fs.createReadStream(`${tmpPath}/contact.csv`))
+      // api url
+      const _url = 'https://service-chat.qontak.com/api/open/v1/contacts/contact_lists/async'
 
       return axios.post(_url, form)
         .then(async function (response) {
+          fs.rm(csvFilePath, { recursive: true, force: true }, (_) => {
+            // console.log(err)
+          })
           return SEND_RESPONSE.success({
             res: vm.res,
             statusCode: HTTP_RESPONSE.status.ok,
