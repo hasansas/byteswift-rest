@@ -30,7 +30,6 @@ class QontakController {
    * @param {File} file
    * @return {Object} HTTP Response
    */
-
   createContacts () {
     try {
       const vm = this
@@ -99,6 +98,65 @@ class QontakController {
           fs.rm(csvFilePath, { recursive: true, force: true }, (_) => {
             // console.log(err)
           })
+          return SEND_RESPONSE.success({
+            res: vm.res,
+            statusCode: HTTP_RESPONSE.status.ok,
+            data: response.data
+          })
+        })
+        .catch(function (error) {
+          const _error = error.response.data
+          return SEND_RESPONSE.error({ res: vm.res, statusCode: HTTP_RESPONSE.status.badRequest, error: { message: _error } })
+        })
+    } catch (error) {
+      return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.internalServerError, error })
+    }
+  }
+
+  /**
+   * Create Broadcast
+   *
+   * @param {string} name
+   * @param {Object} parameters
+   * @return {Object} HTTP Response
+   */
+  createBroadcast () {
+    try {
+      const vm = this
+
+      // validate request
+      const errors = EXPRESS_VALIDATOR.validationResult(this.request)
+      if (!errors.isEmpty()) {
+        const _error = {
+          errors: errors.array()
+        }
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: _error })
+      }
+
+      //  body
+      const name = this.request.body.name
+      const messageTemplateId = this.request.body.message_template_id
+      const contactListId = this.request.body.contact_list_id
+
+      const body = {
+        name: name,
+        message_template_id: messageTemplateId,
+        contact_list_id: contactListId,
+        channel_integration_id: ENV.QONTAK_WHATSAPP_CANNEL_ID,
+        parameters: {
+          body: this.request.body.parameters.body || []
+        }
+      }
+
+      // header
+      axios.defaults.headers.common.Accept = 'application/json'
+      axios.defaults.headers.common.Authorization = 'Bearer ' + this.qontakToken
+
+      // api url
+      const _url = 'https://service-chat.qontak.com/api/open/v1/broadcasts/whatsapp'
+
+      return axios.post(_url, body)
+        .then(async function (response) {
           return SEND_RESPONSE.success({
             res: vm.res,
             statusCode: HTTP_RESPONSE.status.ok,
