@@ -14,12 +14,12 @@
     "start": "standard && babel-node app.js",
     "dev": "NODE_ENV=development nodemon --exec npm run start",
     "prod": "NODE_ENV=production npm run start",
-    "pm2:start:dev": "pm2 start \"npm run dev\" --name node-starter-restfull-api-dev",
-    "pm2:restart:dev": "pm2 restart node-starter-restfull-api-dev --update-env",
-    "pm2:stop:dev": "pm2 delete node-starter-restfull-api-dev",
-    "pm2:start": "pm2 start \"npm run prod\" --name node-starter-restfull-api",
-    "pm2:restart": "pm2 restart node-starter-restfull-api --update-env",
-    "pm2:stop": "pm2 delete node-starter-restfull-api"
+    "pm2:start:dev": "pm2 start \"npm run dev\" --name byteswift-rest-dev",
+    "pm2:restart:dev": "pm2 restart byteswift-rest-dev --update-env",
+    "pm2:stop:dev": "pm2 delete byteswift-rest-dev",
+    "pm2:start": "pm2 start \"npm run prod\" --name byteswift-rest",
+    "pm2:restart": "pm2 restart byteswift-rest --update-env",
+    "pm2:stop": "pm2 delete byteswift-rest"
   },
   "author": "Hasan Sas",
   "license": "ISC",
