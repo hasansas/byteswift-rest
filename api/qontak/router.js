@@ -12,7 +12,7 @@ module.exports = function (app, router) {
    */
   router.post('/v1/qontak/contacts',
     EXPRESS_VALIDATOR.body('name').not().isEmpty(),
-    EXPRESS_VALIDATOR.body('file').not().isEmpty(),
+    EXPRESS_VALIDATOR.body('contacts').not().isEmpty(),
     (req, res) => {
       QontakController({ req, res }).createContacts()
     })
