@@ -31,7 +31,7 @@ class XeroController {
         return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: _error })
       }
       const clientTokens = {
-        sb: 'tfp_DgCa1znA73HaH4gib8VzSCaUPfdW1N9Pbe6VrKsjscjg_3stYCK8cAGdT1U'
+        sb: ENV.TYPEFORM_TOKEN
       }
 
       // typeform token
