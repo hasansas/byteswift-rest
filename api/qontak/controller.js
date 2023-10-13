@@ -5,11 +5,8 @@
 'use strict'
 
 import axios from 'axios'
-// import { Parser } from '@json2csv/plainjs'
-// import { Readable } from 'stream'
-// import { Transform } from '@json2csv/node'
-
 import { stringify } from 'csv-stringify'
+import Qontak from './../../libs/apps/qontak.js'
 
 const fs = require('fs')
 const FormData = require('form-data')
@@ -167,6 +164,54 @@ class QontakController {
           const _error = error.response.data
           return SEND_RESPONSE.error({ res: vm.res, statusCode: HTTP_RESPONSE.status.badRequest, error: { message: _error } })
         })
+    } catch (error) {
+      return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.internalServerError, error })
+    }
+  }
+
+  /**
+   * Send message
+   *
+   * @return {Object} HTTP Response
+   */
+  async sendMessage () {
+    try {
+      // validate request
+      const errors = EXPRESS_VALIDATOR.validationResult(this.request)
+      if (!errors.isEmpty()) {
+        const _error = {
+          errors: errors.array()
+        }
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: _error })
+      }
+
+      // get contact
+      const contact = {
+        name: this.request.body?.name || '',
+        phoneNumber: this.request.body?.phoneNumber || ''
+      }
+
+      // send message
+      const templateId = this.request.body?.templateId || ''
+      const variables = this.request.body?.variables || []
+      const sendMessage = await Qontak().createBroadcastDirect({
+        toName: contact.name,
+        toNumber: contact.phoneNumber,
+        templateId: templateId,
+        variables: variables,
+        language: this.request.body?.language
+      })
+
+      if (!sendMessage.success) {
+        const _error = sendMessage.error
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: { message: _error } })
+      }
+
+      return SEND_RESPONSE.success({
+        res: this.res,
+        statusCode: HTTP_RESPONSE.status.ok,
+        data: sendMessage
+      })
     } catch (error) {
       return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.internalServerError, error })
     }
