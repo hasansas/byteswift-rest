@@ -27,4 +27,15 @@ module.exports = function (app, router) {
     (req, res) => {
       QontakController({ req, res }).createBroadcast()
     })
+
+  /**
+   * Send broadcast direct
+   */
+  router.post('/v1/qontak/broadcast/direct',
+    EXPRESS_VALIDATOR.body('name').not().isEmpty(),
+    EXPRESS_VALIDATOR.body('phoneNumber').not().isEmpty(),
+    EXPRESS_VALIDATOR.body('templateId').not().isEmpty(),
+    (req, res) => {
+      QontakController({ req, res }).sendMessage()
+    })
 }
