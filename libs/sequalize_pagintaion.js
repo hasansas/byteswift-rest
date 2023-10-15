@@ -9,11 +9,12 @@ class SequalizePagintaion {
   }
 
   paginate (data) {
-    const lastPage = Math.ceil(data.count / this.limit)
+    const totalData = data.total
+    const lastPage = Math.ceil(totalData / this.limit)
     const prevPage = this.page > 1 ? this.page - 1 : null
     const nextPage = this.page < lastPage ? this.page + 1 : null
     const pagination = {
-      total: data.count,
+      total: totalData,
       lastPage,
       perPage: this.limit,
       prevPage,

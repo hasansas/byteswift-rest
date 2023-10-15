@@ -33,17 +33,10 @@ class UploadController {
         return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: _error })
       }
 
-      if (!this.request.body.parentDir) {
-        const _error = {
-          message: 'No parent directory found'
-        }
-        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: _error })
-      }
-
       // request
       const authUser = this.request.authUser
       const file = this.request.files.file
-      const parentDir = this.request.body.parentDir
+      const parentDir = this.request.body.parentDir || 'users'
 
       // Get allowed extension
       const extensionName = path.extname(file.name)
@@ -86,12 +79,8 @@ class UploadController {
           return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.internalServerError, error: err })
         }
 
-        const uploadUrl = this.storage.url({ parentDir: parentPath, fileName: fileName })
-        const resData = {
-          name: prefixfileName + ' ' + file.name,
-          url: uploadUrl
-        }
-        return SEND_RESPONSE.success({ res: this.res, statusCode: HTTP_RESPONSE.status.ok, data: resData })
+        const fileInfo = this.storage.fileInfo({ parentDir: parentPath, fileName: fileName })
+        return SEND_RESPONSE.success({ res: this.res, statusCode: HTTP_RESPONSE.status.ok, data: fileInfo })
       })
     } catch (error) {
       return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.internalServerError, error: error })

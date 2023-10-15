@@ -8,7 +8,7 @@ import nodemailer from 'nodemailer'
 import handlebars from 'handlebars'
 
 export const sendMail = async function (mailTo, mailTemplate, mailData) {
-  const emailTemplateModel = DB.emailTemplate
+  const emailTemplateModel = DB.emailTemplates
   const _mailTemplate = await emailTemplateModel.findOne({ where: { name: mailTemplate } })
 
   if (_mailTemplate != null) {

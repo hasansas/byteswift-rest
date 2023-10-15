@@ -24,17 +24,14 @@ export async function up (queryInterface, Sequelize) {
     password: {
       type: Sequelize.STRING
     },
-    image: {
-      type: Sequelize.STRING
-    },
-    loginFrom: {
-      type: Sequelize.STRING,
-      field: 'login_from'
-    },
-    isFirstLogin: {
+    firstLogin: {
       type: Sequelize.BOOLEAN,
       defaultValue: true,
-      field: 'is_first_login'
+      field: 'first_login'
+    },
+    active: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
     },
     isEmailVerified: {
       type: Sequelize.BOOLEAN,
@@ -46,9 +43,8 @@ export async function up (queryInterface, Sequelize) {
       defaultValue: false,
       field: 'is_phone_verified'
     },
-    active: {
-      type: Sequelize.BOOLEAN,
-      defaultValue: false
+    image: {
+      type: Sequelize.STRING
     },
     createdAt: {
       type: Sequelize.DATE,

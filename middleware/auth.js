@@ -5,7 +5,7 @@
 'use strict'
 
 import JWTR from 'jwt-redis'
-import Redis from '../libs/redis'
+import Redis from '../config/redis'
 
 export default async function (req, res, next) {
   try {
@@ -23,7 +23,10 @@ export default async function (req, res, next) {
     const redis = Redis()
     const connect = await redis.connect()
     if (!connect.success) {
-      return SEND_RESPONSE.error({ res: res, statusCode: HTTP_RESPONSE.status.internalServerError, error: connect.error })
+      const err = {
+        message: `Could not connect to redis. ${connect.error.message}`
+      }
+      return SEND_RESPONSE.error({ res: res, statusCode: HTTP_RESPONSE.status.internalServerError, error: err })
     }
     const redisClient = connect.client
 
@@ -35,6 +38,8 @@ export default async function (req, res, next) {
     // add reuest auth user
     req.token = _token
     req.authUser = verify
+
+    redisClient.disconnect()
 
     next()
   } catch (error) {

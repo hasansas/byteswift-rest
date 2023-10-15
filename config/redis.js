@@ -9,7 +9,7 @@ class Redis {
     const redisHost = ENV.REDIS_HOST || '127.0.0.1'
     const redisPort = ENV.REDIS_PORT || '6379'
     const redisDb = ENV.REDIS_DB || 0
-    const redisPassword = ENV.REDIS_PASSWORD || 'mySecr3tPass'
+    const redisPassword = ENV.REDIS_PASSWORD
 
     const client = redis.createClient({
       url: `redis://${redisHost}:${redisPort}`,

@@ -1,12 +1,12 @@
 /**
- * Email Template Model
+ * Email Templates Model
  */
 
 'use strict'
 
 module.exports = (sequelize, DataTypes) => {
   const EmailTemplate = sequelize.define(
-    'emailTemplate',
+    'emailTemplates',
     {
       id: {
         type: DataTypes.INTEGER,

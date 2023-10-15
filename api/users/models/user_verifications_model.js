@@ -5,7 +5,7 @@
 'use strict'
 
 module.exports = (sequelize, DataTypes) => {
-  const UsersInfo = sequelize.define(
+  const UsersVerivications = sequelize.define(
     'userVerifications',
     {
       id: {
@@ -43,8 +43,11 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
   )
-  UsersInfo.associate = function (models) {
-    // associations can be defined here
+  UsersVerivications.associate = function (models) {
+    UsersVerivications.belongsTo(models.users, {
+      hooks: true,
+      foreignKey: 'user_id'
+    })
   }
-  return UsersInfo
+  return UsersVerivications
 }

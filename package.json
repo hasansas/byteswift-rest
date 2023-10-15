@@ -24,6 +24,7 @@
   "author": "Hasan Sas",
   "license": "ISC",
   "dependencies": {
+    "awesome-phonenumber": "^6.1.0",
     "axios": "^0.27.2",
     "bcrypt": "^5.0.1",
     "body-parser": "^1.19.1",

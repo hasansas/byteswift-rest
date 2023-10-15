@@ -1,5 +1,7 @@
 'use strict'
 
+import path from 'path'
+
 const { v4: uuidv4 } = require('uuid')
 
 export async function up (queryInterface, Sequelize) {
@@ -27,14 +29,18 @@ export async function up (queryInterface, Sequelize) {
     },
     {
       id: uuidv4(),
-      name: 'user',
-      description: 'A User User',
+      name: 'client',
+      description: 'A Client User',
       created_at: new Date(),
       updated_at: new Date()
     }
   ]
 
   await queryInterface.bulkInsert('roles', _roles, {})
+
+  // log seeder
+  const seeder = path.basename(__filename)
+  await queryInterface.bulkInsert('SequalizeSeeders', [{ name: seeder }], {})
 }
 export async function down (queryInterface, Sequelize) {
   await queryInterface.bulkDelete('roles', null, {})
