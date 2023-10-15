@@ -1,5 +1,7 @@
 'use strict'
 
+import path from 'path'
+
 const { v4: uuidv4 } = require('uuid')
 const bcrypt = require('bcrypt')
 
@@ -71,6 +73,10 @@ export async function up (queryInterface, Sequelize) {
       }
     ]
     await queryInterface.bulkInsert('users_roles', _userRoles, {})
+
+    // log seeder
+    const seeder = path.basename(__filename)
+    await queryInterface.bulkInsert('SequalizeSeeders', [{ name: seeder }], {})
   })
 }
 export async function down (queryInterface, Sequelize) {

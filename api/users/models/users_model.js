@@ -32,10 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       image: {
         type: DataTypes.STRING
       },
-      loginFrom: {
-        type: DataTypes.STRING
-      },
-      isFirstLogin: {
+      firstLogin: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
       },

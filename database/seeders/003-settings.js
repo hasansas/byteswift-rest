@@ -1,16 +1,18 @@
 'use strict'
 
+import path from 'path'
+
 export async function up (queryInterface, Sequelize) {
   const _settings = [
     {
       name: 'app_name',
-      value: 'Edumo',
+      value: 'Bytexist',
       created_at: new Date(),
       updated_at: new Date()
     },
     {
       name: 'site_title',
-      value: 'Edumo',
+      value: 'Bytexist',
       created_at: new Date(),
       updated_at: new Date()
     },
@@ -40,7 +42,7 @@ export async function up (queryInterface, Sequelize) {
     },
     {
       name: 'company_name',
-      value: 'Vemobo',
+      value: 'Bytexist',
       created_at: new Date(),
       updated_at: new Date()
     },
@@ -70,7 +72,7 @@ export async function up (queryInterface, Sequelize) {
     },
     {
       name: 'theme',
-      value: 'edumo',
+      value: 'Bytexist',
       created_at: new Date(),
       updated_at: new Date()
     },
@@ -84,6 +86,10 @@ export async function up (queryInterface, Sequelize) {
   await queryInterface.bulkInsert('settings', _settings, {
     returning: true
   })
+
+  // log seeder
+  const seeder = path.basename(__filename)
+  await queryInterface.bulkInsert('SequalizeSeeders', [{ name: seeder }], {})
 }
 export async function down (queryInterface, Sequelize) {
   await queryInterface.bulkDelete('settings', null, {})
