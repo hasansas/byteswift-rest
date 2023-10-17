@@ -664,9 +664,11 @@ class UsersController {
         const user = await this.usersModel.findOne(
           { where: { id: this.request.authUser.id } }
         )
-        if (user.image !== null || user.image !== '') {
+        if (user.image !== null && user.image !== '') {
           if (user.image !== this.request.body.image) {
             const _paretDir = 'users/' + user.id
+            console.log('_paretDir', _paretDir)
+            console.log('fileName', user.image)
             const _filePath = this.storage.filePath({ parentDir: _paretDir, fileName: user.image })
             if (fs.existsSync(_filePath)) {
               fs.rm(_filePath, { force: true }, (_) => {

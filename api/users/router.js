@@ -13,7 +13,6 @@ module.exports = function (app, router) {
   router.post(
     '/v1/users/register',
     EXPRESS_VALIDATOR.body('email').isEmail().normalizeEmail(),
-    EXPRESS_VALIDATOR.body('waNumber').not().isEmpty(),
     EXPRESS_VALIDATOR.body('name').not().isEmpty(),
     EXPRESS_VALIDATOR.check('password')
       .isLength({ min: 8 }).withMessage('must be at least 8 chars long')

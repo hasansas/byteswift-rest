@@ -157,7 +157,7 @@ class QontakController {
           return SEND_RESPONSE.success({
             res: vm.res,
             statusCode: HTTP_RESPONSE.status.ok,
-            data: response.data
+            data: response.data || ''
           })
         })
         .catch(function (error) {
