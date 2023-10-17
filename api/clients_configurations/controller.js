@@ -18,7 +18,18 @@ class ClientsConfigurationsController {
     this.clientsConfigurationsModel = DB.clientsConfigurations
 
     // availble client config
-    this.availableConfigurations = ['notification_url']
+    this.availableConfigurations = [
+      'qontak_token',
+      'qontak_whatsapp_channel_id',
+      'qontak_xero_invoice_template_id',
+      'qontak_zoho_lead_created_template_id'
+    ]
+
+    // hide configurations
+    this.hiddenConfigurations = [
+      'qontak_token',
+      'qontak_whatsapp_channel_id'
+    ]
 
     // Role authorization
     roleMiddleware({ req: this.request, res: this.res, allowedRoles: ['client'] })
@@ -59,9 +70,15 @@ class ClientsConfigurationsController {
             })
           }
 
+          const configurationData = data.rows.map(e => {
+            if (this.hiddenConfigurations.includes(e.name)) {
+              e.value = this.hideString(e.value)
+            }
+            return e
+          })
           const _data = {
             total: data.count,
-            rows: data
+            rows: configurationData
           }
           const resData = sequalizePagintaion.paginate(_data)
 
@@ -108,7 +125,7 @@ class ClientsConfigurationsController {
           id: uuidv4(),
           clientId: _client.id,
           name: element,
-          value: this.request.body[element] ?? _currentValue,
+          value: this.request.body[element] && this.request.body[element] !== '' ? this.request.body[element] : _currentValue,
           created_at: new Date(),
           updated_at: new Date()
         }
@@ -130,6 +147,27 @@ class ClientsConfigurationsController {
     } catch (error) {
       return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.internalServerError, error: error })
     }
+  }
+
+  /**
+   * Hide string (rplaced with x)
+   *
+   * @return {String} hidden string
+   */
+  hideString (str) {
+    let hiddenStr = str
+
+    if (str.length > 7) {
+      const prefixStrLength = 2
+      const suffixStrLength = str.length - 5
+      const prefixStr = str.substring(0, prefixStrLength)
+      const suffixStr = str.substring(suffixStrLength)
+      const trimmedStr = str.substring(2, suffixStrLength)
+      const encodedStr = trimmedStr.replace(/[0-9 a-z A-Z]/g, 'x')
+
+      hiddenStr = prefixStr + encodedStr + suffixStr
+    }
+    return hiddenStr
   }
 }
 export default ({ req, res }) => new ClientsConfigurationsController({ req, res })
