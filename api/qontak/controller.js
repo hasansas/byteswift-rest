@@ -17,7 +17,8 @@ class QontakController {
     this.request = req
     this.query = req.query
     this.res = res
-    this.qontakToken = ENV.QONTAK_TOKEN
+    this.clientsModel = DB.clients
+    this.clientsConfigurationsModel = DB.clientsConfigurations
   }
 
   /**
@@ -214,6 +215,63 @@ class QontakController {
       })
     } catch (error) {
       return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.internalServerError, error })
+    }
+  }
+
+  async indexTemplates () {
+    try {
+      const vm = this
+
+      // get client
+      const _client = await this.clientsModel
+        .findOne({
+          where: {
+            userId: this.request.authUser.id
+          },
+          attributes: ['id']
+        })
+
+      // get current configurations
+      const getClientConfiguration = await this.clientsConfigurationsModel
+        .findAll({
+          where: {
+            clientId: _client.id
+          },
+          attributes: ['name', 'value']
+        })
+
+      const clientConfig = getClientConfiguration.reduce((current, next) => {
+        const item = {}
+        item[next.name] = next.value
+        return { ...current, ...item }
+      }, {})
+
+      const qontakToken = clientConfig?.qontak_token || ''
+      if (qontakToken === '') {
+        const _error = { message: 'Qontak token not set' }
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.unprocessableEntity, error: _error })
+      }
+
+      // header
+      axios.defaults.headers.common.Accept = 'application/json'
+      axios.defaults.headers.common.Authorization = 'Bearer ' + qontakToken
+
+      // api url
+      const _url = 'https://service-chat.qontak.com/api/open/v1/templates/whatsapp'
+      return axios.get(_url)
+        .then(async function (response) {
+          return SEND_RESPONSE.success({
+            res: vm.res,
+            statusCode: HTTP_RESPONSE.status.ok,
+            data: response?.data?.data || ''
+          })
+        })
+        .catch(function (error) {
+          const _error = error.response.data
+          return SEND_RESPONSE.error({ res: vm.res, statusCode: HTTP_RESPONSE.status.badRequest, error: { message: _error } })
+        })
+    } catch (error) {
+      return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.internalServerError, error: error })
     }
   }
 }
