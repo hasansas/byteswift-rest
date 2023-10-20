@@ -38,4 +38,11 @@ module.exports = function (app, router) {
     (req, res) => {
       QontakController({ req, res }).sendMessage()
     })
+
+  /**
+   * get whatsapp templates
+   */
+  router.get('/v1/qontak/templates', AUTH, (req, res) => {
+    QontakController({ req, res }).indexTemplates()
+  })
 }

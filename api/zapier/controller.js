@@ -11,6 +11,7 @@ class ZapierController {
     this.request = req
     this.query = req.query
     this.res = res
+    this.clientsModel = DB.clients
   }
 
   /**
@@ -20,6 +21,56 @@ class ZapierController {
    */
   async zohoNewLead () {
     try {
+      // authenticate request
+      const _authorization = this.request.headers.authorization
+      if (!_authorization) {
+        const _error = 'No authorization token was found'
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.forbidden, error: { message: _error } })
+      }
+
+      // get auth type
+      const _authType = _authorization.split(' ')[0]
+      const _authKey = _authorization.split(' ')[1]
+
+      if (_authType.toLowerCase() === 'bearer') {
+        const _error = 'Invalid authorization token'
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.forbidden, error: { message: _error } })
+      }
+
+      // Basic auth using server key & client key
+      const _authorizationKey = Buffer.from(_authKey, 'base64')
+      const _keys = _authorizationKey.toString('ascii').split(':')
+
+      const clientKey = _keys[0]
+      const serverKey = _keys[1]
+
+      const getClient = await this.clientsModel
+        .findOne({
+          where: {
+            serverKey: serverKey,
+            clientKey: clientKey
+          },
+          attributes: ['id', 'userId']
+        })
+
+      if (getClient === null) {
+        const _error = 'Invalid authorization token'
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.forbidden, error: { message: _error } })
+      }
+
+      // set user/client id
+      const userId = getClient.userId
+      const clientId = getClient.id
+
+      // validate user
+      if (typeof userId === 'undefined') {
+        const _error = 'Invalid authorization token'
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.forbidden, error: { message: _error } })
+      }
+
+      // set request user
+      this.request.user = { id: userId, clientId: clientId }
+
       // get contact
       const contact = {
         name: this.request.body?.Full_Name || '',
@@ -29,6 +80,7 @@ class ZapierController {
       // send message
       const templateId = 'a588881b-b81e-4dd6-91c2-64370cacca66'
       const sendMessage = await Qontak().createBroadcastDirect({
+        clientId: this.request.user.clientId,
         toName: contact.name,
         toNumber: contact.phoneNumber,
         templateId: templateId,
