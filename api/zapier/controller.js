@@ -13,6 +13,9 @@ class ZapierController {
     this.res = res
     this.clientsModel = DB.clients
     this.clientsConfigurationsModel = DB.clientsConfigurations
+    this.webhooksModel = DB.webhooks
+    this.messagesModel = DB.messages
+    this.event = 'zoho_new_lead_created'
   }
 
   /**
@@ -72,6 +75,14 @@ class ZapierController {
       // set request user
       this.request.user = { id: userId, clientId: clientId }
 
+      // save to webhook
+      const eventData = {
+        userId: userId,
+        event: this.event,
+        request: this.request.body
+      }
+      this.webhooksModel.create(eventData)
+
       // get contact
       const contact = {
         name: this.request.body?.Full_Name || '',
@@ -110,8 +121,19 @@ class ZapierController {
         templateId = clientConfig[selectedProgram] || ''
       }
 
+      // messages
+      const messages = {
+        userId: userId,
+        templateId: templateId,
+        event: this.event,
+        status: 'error',
+        error: ''
+      }
+
       if (!templateId) {
         const _error = 'Template not provided'
+        messages.error = _error
+        this.messagesModel.create(messages)
         return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.forbidden, error: { message: _error } })
       }
 
@@ -132,8 +154,18 @@ class ZapierController {
 
       if (!sendMessage.success) {
         const _error = sendMessage.error
+        const getError = Array.isArray(sendMessage.error.error.messages)
+          ? sendMessage.error.error.messages[0] || 'Unknown error'
+          : sendMessage.error.error.messages
+        const errReason = typeof getError === 'string' || getError instanceof String ? getError : 'Unknown error'
+        messages.error = errReason
+        this.messagesModel.create(messages)
+
         return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: { message: _error } })
       }
+
+      messages.status = 'success'
+      this.messagesModel.create(messages)
 
       return SEND_RESPONSE.success({
         res: this.res,
