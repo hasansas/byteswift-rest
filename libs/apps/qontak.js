@@ -252,16 +252,6 @@ class Qontak {
       }
     }
 
-    if (event === 'zoho_new_lead_created') {
-      if (qontakZohoLeadCreatedTemplateId === '') {
-        const _error = 'Message template for Zoho new lead created not set'
-        return {
-          success: false,
-          error: _error
-        }
-      }
-    }
-
     return {
       success: true,
       data: {
