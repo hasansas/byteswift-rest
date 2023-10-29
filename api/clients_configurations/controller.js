@@ -22,7 +22,10 @@ class ClientsConfigurationsController {
       'qontak_token',
       'qontak_whatsapp_channel_id',
       'qontak_xero_invoice_template_id',
-      'qontak_zoho_lead_created_template_id'
+      'qontak_zoho_lead_created_template_id',
+      'qontak_zoho_lead_created_program_recomended_option1_template_id',
+      'qontak_zoho_lead_created_program_recomended_option2_template_id',
+      'qontak_zoho_lead_created_program_recomended_option3_template_id'
     ]
 
     // hide configurations
