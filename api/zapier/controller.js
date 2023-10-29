@@ -12,6 +12,7 @@ class ZapierController {
     this.query = req.query
     this.res = res
     this.clientsModel = DB.clients
+    this.clientsConfigurationsModel = DB.clientsConfigurations
   }
 
   /**
@@ -77,8 +78,44 @@ class ZapierController {
         phoneNumber: this.request.body?.Mobile || this.request.body?.Phone || ''
       }
 
+      // get template
+      let templateId
+      const programRecomended = this.request.body.Program_Recommended
+      if (programRecomended) {
+        // get configuration
+        const getClientConfiguration = await this.clientsConfigurationsModel
+          .findAll({
+            where: {
+              clientId: clientId
+            },
+            attributes: ['name', 'value']
+          })
+
+        // convert configuration array to object
+        const clientConfig = getClientConfiguration.reduce((current, next) => {
+          const item = {}
+          item[next.name] = next.value
+          return { ...current, ...item }
+        }, {})
+
+        const programRecomendedOptions = {
+          premium_internship_program: 'qontak_zoho_lead_created_program_recomended_option1_template_id',
+          career_coaching_program: 'qontak_zoho_lead_created_program_recomended_option2_template_id',
+          premium_internship_or_career_coaching_program: 'qontak_zoho_lead_created_program_recomended_option3_template_id'
+        }
+
+        const programOption = programRecomended.trim().replaceAll(' ', '_').toLowerCase()
+        const selectedProgram = programRecomendedOptions[programOption]
+
+        templateId = clientConfig[selectedProgram] || ''
+      }
+
+      if (!templateId) {
+        const _error = 'Template not provided'
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.forbidden, error: { message: _error } })
+      }
+
       // send message
-      const templateId = 'a588881b-b81e-4dd6-91c2-64370cacca66'
       const sendMessage = await Qontak().createBroadcastDirect({
         clientId: this.request.user.clientId,
         toName: contact.name,

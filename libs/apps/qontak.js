@@ -108,7 +108,7 @@ class Qontak {
    * @param {Array} parameters
    * @return {Object} Response
    */
-  async createBroadcastDirect ({ clientId, toName, toNumber, language = 'en', variables = [] }) {
+  async createBroadcastDirect ({ clientId, toName, toNumber, templateId, language = 'en', variables = [] }) {
     try {
       const getQontakSettings = await this.qontakSettings({ clientId, event: 'zoho_new_lead_created' })
       if (!getQontakSettings.success) {
@@ -120,12 +120,11 @@ class Qontak {
       //  body
       const qontakToken = getQontakSettings.data?.qontakToken
       const qontakWhatsappChannelId = getQontakSettings.data?.qontakWhatsappChannelId
-      const qontakZohoLeadCreatedTemplateId = getQontakSettings.data?.qontakZohoLeadCreatedTemplateId
 
       const body = {
         to_name: toName,
         to_number: toNumber,
-        message_template_id: qontakZohoLeadCreatedTemplateId,
+        message_template_id: templateId,
         channel_integration_id: qontakWhatsappChannelId,
         language: {
           code: language
