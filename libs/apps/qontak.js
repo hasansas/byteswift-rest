@@ -15,7 +15,6 @@ class Qontak {
     this.clientsConfigurationsModel = DB.clientsConfigurations
     this.qontakPrefix = 'Byteswift - '
     this.qontakSuffix = ' ' + moment().unix()
-    this.qontakToken = ENV.QONTAK_TOKEN
   }
 
   /**
@@ -110,6 +109,7 @@ class Qontak {
    */
   async createBroadcastDirect ({ clientId, toName, toNumber, templateId, language = 'en', variables = [] }) {
     try {
+      // get qontak settings
       const getQontakSettings = await this.qontakSettings({ clientId, event: 'zoho_new_lead_created' })
       if (!getQontakSettings.success) {
         return {
@@ -117,6 +117,7 @@ class Qontak {
           error: getQontakSettings.error
         }
       }
+
       //  body
       const qontakToken = getQontakSettings.data?.qontakToken
       const qontakWhatsappChannelId = getQontakSettings.data?.qontakWhatsappChannelId
@@ -173,15 +174,27 @@ class Qontak {
    * @param {Array} parameters
    * @return {Object} Response
    */
-  createBroadcast ({ name, templateId, contactListId, variables = [] }) {
+  async createBroadcast ({ clientId, name, templateId, contactListId, variables = [] }) {
     try {
+      // get qontak settings
+      const getQontakSettings = await this.qontakSettings({ clientId })
+      if (!getQontakSettings.success) {
+        return {
+          success: false,
+          error: getQontakSettings.error
+        }
+      }
+
       //  body
       const broadcastName = this.qontakPrefix + name + this.qontakSuffix
+      const qontakToken = getQontakSettings.data?.qontakToken
+      const qontakWhatsappChannelId = getQontakSettings.data?.qontakWhatsappChannelId
+
       const body = {
         name: broadcastName,
         message_template_id: templateId,
         contact_list_id: contactListId,
-        channel_integration_id: ENV.QONTAK_WHATSAPP_CANNEL_ID,
+        channel_integration_id: qontakWhatsappChannelId,
         parameters: {
           body: variables
         }
@@ -189,7 +202,7 @@ class Qontak {
 
       // header
       axios.defaults.headers.common.Accept = 'application/json'
-      axios.defaults.headers.common.Authorization = 'Bearer ' + this.qontakToken
+      axios.defaults.headers.common.Authorization = 'Bearer ' + qontakToken
 
       // api url
       const _url = 'https://service-chat.qontak.com/api/open/v1/broadcasts/whatsapp'
@@ -215,7 +228,7 @@ class Qontak {
     }
   }
 
-  async qontakSettings ({ clientId, event = '' }) {
+  async qontakSettings ({ clientId }) {
     // get configuration
     const getClientConfiguration = await this.clientsConfigurationsModel
       .findAll({

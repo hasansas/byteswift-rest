@@ -28,7 +28,7 @@ class QontakController {
    * @param {File} file
    * @return {Object} HTTP Response
    */
-  createContacts () {
+  async createContacts () {
     try {
       const vm = this
 
@@ -39,6 +39,24 @@ class QontakController {
           errors: errors.array()
         }
         return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: _error })
+      }
+
+      // get client
+      const _client = await this.clientsModel
+        .findOne({
+          where: {
+            userId: this.request.authUser.id
+          },
+          attributes: ['id']
+        })
+
+      // get qontak setting
+      const getQontakSettings = await Qontak().qontakSettings({
+        clientId: _client.id
+      })
+      if (!getQontakSettings.success) {
+        const _error = getQontakSettings.error
+        return SEND_RESPONSE.error({ res: vm.res, statusCode: HTTP_RESPONSE.status.badRequest, error: { message: _error } })
       }
 
       //  body
@@ -85,8 +103,9 @@ class QontakController {
       form.append('file', fs.createReadStream(csvFilePath))
 
       // header
+      const qontakToken = getQontakSettings.data?.qontakToken
       axios.defaults.headers.common.Accept = 'application/json'
-      axios.defaults.headers.common.Authorization = 'Bearer ' + this.qontakToken
+      axios.defaults.headers.common.Authorization = 'Bearer ' + qontakToken
 
       // api url
       const _url = 'https://service-chat.qontak.com/api/open/v1/contacts/contact_lists/async'
@@ -118,9 +137,9 @@ class QontakController {
    * @param {Object} parameters
    * @return {Object} HTTP Response
    */
-  createBroadcast () {
+  async createBroadcast () {
     try {
-      const vm = this
+      // const vm = this
 
       // validate request
       const errors = EXPRESS_VALIDATOR.validationResult(this.request)
@@ -131,40 +150,67 @@ class QontakController {
         return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: _error })
       }
 
-      //  body
-      const name = this.request.body.name
-      const messageTemplateId = this.request.body.message_template_id
-      const contactListId = this.request.body.contact_list_id
+      // get client
+      const _client = await this.clientsModel
+        .findOne({
+          where: {
+            userId: this.request.authUser.id
+          },
+          attributes: ['id']
+        })
 
-      const body = {
-        name: name,
-        message_template_id: messageTemplateId,
-        contact_list_id: contactListId,
-        channel_integration_id: ENV.QONTAK_WHATSAPP_CANNEL_ID,
-        parameters: {
-          body: this.request.body.parameters.body || []
-        }
+      //  body
+      const clientId = _client.id
+      const name = this.request.body.name
+      const templateId = this.request.body.message_template_id
+      const contactListId = this.request.body.contact_list_id
+      const variables = this.request.body?.variables || []
+
+      // create broadcast
+      const sendMessage = await Qontak().createBroadcast({
+        clientId, name, templateId, contactListId, variables
+      })
+
+      if (!sendMessage.success) {
+        const _error = sendMessage.error
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: { message: _error } })
       }
 
-      // header
-      axios.defaults.headers.common.Accept = 'application/json'
-      axios.defaults.headers.common.Authorization = 'Bearer ' + this.qontakToken
+      return SEND_RESPONSE.success({
+        res: this.res,
+        statusCode: HTTP_RESPONSE.status.ok,
+        data: sendMessage
+      })
 
-      // api url
-      const _url = 'https://service-chat.qontak.com/api/open/v1/broadcasts/whatsapp'
+      // const body = {
+      //   name: name,
+      //   message_template_id: messageTemplateId,
+      //   contact_list_id: contactListId,
+      //   channel_integration_id: ENV.QONTAK_WHATSAPP_CANNEL_ID,
+      //   parameters: {
+      //     body: this.request.body.parameters.body || []
+      //   }
+      // }
 
-      return axios.post(_url, body)
-        .then(async function (response) {
-          return SEND_RESPONSE.success({
-            res: vm.res,
-            statusCode: HTTP_RESPONSE.status.ok,
-            data: response.data || ''
-          })
-        })
-        .catch(function (error) {
-          const _error = error.response.data
-          return SEND_RESPONSE.error({ res: vm.res, statusCode: HTTP_RESPONSE.status.badRequest, error: { message: _error } })
-        })
+      // // header
+      // axios.defaults.headers.common.Accept = 'application/json'
+      // axios.defaults.headers.common.Authorization = 'Bearer ' + this.qontakToken
+
+      // // api url
+      // const _url = 'https://service-chat.qontak.com/api/open/v1/broadcasts/whatsapp'
+
+      // return axios.post(_url, body)
+      //   .then(async function (response) {
+      //     return SEND_RESPONSE.success({
+      //       res: vm.res,
+      //       statusCode: HTTP_RESPONSE.status.ok,
+      //       data: response.data || ''
+      //     })
+      //   })
+      //   .catch(function (error) {
+      //     const _error = error.response.data
+      //     return SEND_RESPONSE.error({ res: vm.res, statusCode: HTTP_RESPONSE.status.badRequest, error: { message: _error } })
+      //   })
     } catch (error) {
       return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.internalServerError, error })
     }

@@ -13,6 +13,7 @@ module.exports = function (app, router) {
   router.post('/v1/qontak/broadcast/recipient',
     EXPRESS_VALIDATOR.body('name').not().isEmpty(),
     EXPRESS_VALIDATOR.body('contacts').not().isEmpty(),
+    AUTH,
     (req, res) => {
       QontakController({ req, res }).createContacts()
     })
@@ -24,6 +25,7 @@ module.exports = function (app, router) {
     EXPRESS_VALIDATOR.body('name').not().isEmpty(),
     EXPRESS_VALIDATOR.body('message_template_id').not().isEmpty(),
     EXPRESS_VALIDATOR.body('contact_list_id').not().isEmpty(),
+    AUTH,
     (req, res) => {
       QontakController({ req, res }).createBroadcast()
     })
@@ -35,6 +37,7 @@ module.exports = function (app, router) {
     EXPRESS_VALIDATOR.body('name').not().isEmpty(),
     EXPRESS_VALIDATOR.body('phoneNumber').not().isEmpty(),
     EXPRESS_VALIDATOR.body('templateId').not().isEmpty(),
+    AUTH,
     (req, res) => {
       QontakController({ req, res }).sendMessage()
     })
