@@ -18,6 +18,59 @@ class Qontak {
   }
 
   /**
+   * Get Qontak Settings
+   *
+   * @param {string} clientId
+   * @return {Object} Response
+   */
+  async qontakSettings ({ clientId }) {
+    // get configuration
+    const getClientConfiguration = await this.clientsConfigurationsModel
+      .findAll({
+        where: {
+          clientId: clientId
+        },
+        attributes: ['name', 'value']
+      })
+
+    // convert configuration array to object
+    const clientConfig = getClientConfiguration.reduce((current, next) => {
+      const item = {}
+      item[next.name] = next.value
+      return { ...current, ...item }
+    }, {})
+
+    const qontakToken = clientConfig?.qontak_token || ''
+    const qontakWhatsappChannelId = clientConfig?.qontak_whatsapp_channel_id || ''
+    const qontakZohoLeadCreatedTemplateId = clientConfig?.qontak_zoho_lead_created_template_id || ''
+
+    if (qontakToken === '') {
+      const _error = 'Qontak token not set'
+      return {
+        success: false,
+        error: _error
+      }
+    }
+
+    if (qontakWhatsappChannelId === '') {
+      const _error = 'Whatsapp channel ID not set'
+      return {
+        success: false,
+        error: _error
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        qontakToken,
+        qontakWhatsappChannelId,
+        qontakZohoLeadCreatedTemplateId
+      }
+    }
+  }
+
+  /**
    * Create Contacts List
    *
    * @param {string} name
@@ -107,7 +160,7 @@ class Qontak {
    * @param {Array} parameters
    * @return {Object} Response
    */
-  async createBroadcastDirect ({ clientId, toName, toNumber, templateId, language = 'en', variables = [] }) {
+  async createBroadcastDirect ({ clientId, toName, toNumber, templateId, language = 'en', header = null, variables = [] }) {
     try {
       // get qontak settings
       const getQontakSettings = await this.qontakSettings({ clientId, event: 'zoho_new_lead_created' })
@@ -133,6 +186,10 @@ class Qontak {
         parameters: {
           body: variables
         }
+      }
+
+      if (header) {
+        body.parameters.header = header
       }
 
       // header
@@ -228,49 +285,42 @@ class Qontak {
     }
   }
 
-  async qontakSettings ({ clientId }) {
-    // get configuration
-    const getClientConfiguration = await this.clientsConfigurationsModel
-      .findAll({
-        where: {
-          clientId: clientId
-        },
-        attributes: ['name', 'value']
-      })
+  async getTemplate ({ clientId, templateId }) {
+    try {
+      // get qontak settings
+      const getQontakSettings = await this.qontakSettings({ clientId })
+      if (!getQontakSettings.success) {
+        return {
+          success: false,
+          error: getQontakSettings.error
+        }
+      }
+      const qontakToken = getQontakSettings.data?.qontakToken
 
-    // convert configuration array to object
-    const clientConfig = getClientConfiguration.reduce((current, next) => {
-      const item = {}
-      item[next.name] = next.value
-      return { ...current, ...item }
-    }, {})
+      // header
+      axios.defaults.headers.common.Accept = 'application/json'
+      axios.defaults.headers.common.Authorization = 'Bearer ' + qontakToken
 
-    const qontakToken = clientConfig?.qontak_token || ''
-    const qontakWhatsappChannelId = clientConfig?.qontak_whatsapp_channel_id || ''
-    const qontakZohoLeadCreatedTemplateId = clientConfig?.qontak_zoho_lead_created_template_id || ''
-
-    if (qontakToken === '') {
-      const _error = 'Qontak token not set'
+      // api url
+      const _url = `https://service-chat.qontak.com/api/open/v1/templates/${templateId}/whatsapp`
+      return axios.get(_url)
+        .then(async function (response) {
+          return {
+            success: true,
+            data: response.data?.data
+          }
+        })
+        .catch(function (error) {
+          const _error = error.response.data
+          return {
+            success: false,
+            error: _error
+          }
+        })
+    } catch (error) {
       return {
         success: false,
-        error: _error
-      }
-    }
-
-    if (qontakWhatsappChannelId === '') {
-      const _error = 'Whatsapp channel ID not set'
-      return {
-        success: false,
-        error: _error
-      }
-    }
-
-    return {
-      success: true,
-      data: {
-        qontakToken,
-        qontakWhatsappChannelId,
-        qontakZohoLeadCreatedTemplateId
+        error: error
       }
     }
   }

@@ -137,12 +137,58 @@ class ZapierController {
         return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.forbidden, error: { message: _error } })
       }
 
-      // send message
-      const sendMessage = await Qontak().createBroadcastDirect({
+      // get template
+      const getTemplate = await Qontak().getTemplate({ clientId, templateId })
+
+      if (!getTemplate.success) {
+        const _error = getTemplate.error
+        const getError = Array.isArray(getTemplate.error.error.messages)
+          ? getTemplate.error.error.messages[0] || 'Unknown error'
+          : getTemplate.error.error.messages
+        const errReason = typeof getError === 'string' || getError instanceof String ? getError : 'Unknown error'
+        messages.error = errReason
+        this.messagesModel.create(messages)
+
+        return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.badRequest, error: { message: _error } })
+      }
+
+      let header = null
+      if (getTemplate.data.header) {
+        // const _header = {
+        //   format: 'IMAGE',
+        //   example: '#<Hashie::Mash header_handle=#<Hashie::Array ["https://scontent.whatsapp.net/v/t61.29466-34/381031121_1104813207149564_2333868501296039660_n.jpg?ccb=1-7&_nc_sid=8b1bef&_nc_ohc=74IiHr4JxVEAX_e9JD2&_nc_ht=scontent.whatsapp.net&edm=AH51TzQEAAAA&oh=01_AdQIdfYtr2MbSQLgKUYomm8DWM-nEurHmgbPbHkRX7mB0Q&oe=656C0F84"]>>'
+        // }
+        const _header = getTemplate.data.header
+        const format = _header.format
+        const example = _header.example
+
+        if (format === 'IMAGE') {
+          const getStringBetween = function (startStr, endStr, str) {
+            const pos = str.indexOf(startStr) + startStr.length
+            return str.substring(pos, str.indexOf(endStr, pos))
+          }
+          const start = '["'
+          const end = '"]'
+          const fileUrl = getStringBetween(start, end, example)
+
+          header = {
+            format: format,
+            params: [
+              {
+                key: 1,
+                value: fileUrl
+              }
+            ]
+          }
+        }
+      }
+
+      const messageData = {
         clientId: this.request.user.clientId,
         toName: contact.name,
         toNumber: contact.phoneNumber,
         templateId: templateId,
+        header: header,
         variables: [
           {
             key: '1',
@@ -150,7 +196,10 @@ class ZapierController {
             value: contact.name.replaceAll(' ', '_').toLowerCase()
           }
         ]
-      })
+      }
+
+      // send message
+      const sendMessage = await Qontak().createBroadcastDirect(messageData)
 
       if (!sendMessage.success) {
         const _error = sendMessage.error
@@ -170,7 +219,12 @@ class ZapierController {
       return SEND_RESPONSE.success({
         res: this.res,
         statusCode: HTTP_RESPONSE.status.ok,
-        data: sendMessage
+        // data: sendMessage
+        data: {
+          // templateIs
+          // messageData
+          sendMessage
+        }
       })
     } catch (error) {
       return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.internalServerError, error })
