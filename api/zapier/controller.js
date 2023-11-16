@@ -154,29 +154,32 @@ class ZapierController {
 
       let header = null
       if (getTemplate.data.header) {
-        // const _header = {
-        //   format: 'IMAGE',
-        //   example: '#<Hashie::Mash header_handle=#<Hashie::Array ["https://scontent.whatsapp.net/v/t61.29466-34/381031121_1104813207149564_2333868501296039660_n.jpg?ccb=1-7&_nc_sid=8b1bef&_nc_ohc=74IiHr4JxVEAX_e9JD2&_nc_ht=scontent.whatsapp.net&edm=AH51TzQEAAAA&oh=01_AdQIdfYtr2MbSQLgKUYomm8DWM-nEurHmgbPbHkRX7mB0Q&oe=656C0F84"]>>'
-        // }
-        const _header = getTemplate.data.header
+        const _header = {
+          format: 'IMAGE',
+          example: '#<Hashie::Mash header_handle=#<Hashie::Array ["https://scontent.whatsapp.net/v/t61.29466-34/381031121_1104813207149564_2333868501296039660_n.jpg?ccb=1-7&_nc_sid=8b1bef&_nc_ohc=74IiHr4JxVEAX_e9JD2&_nc_ht=scontent.whatsapp.net&edm=AH51TzQEAAAA&oh=01_AdQIdfYtr2MbSQLgKUYomm8DWM-nEurHmgbPbHkRX7mB0Q&oe=656C0F84"]>>'
+        }
+        // const _header = getTemplate.data.header
         const format = _header.format
-        const example = _header.example
+        // const example = _header.example
 
         if (format === 'IMAGE') {
-          const getStringBetween = function (startStr, endStr, str) {
-            const pos = str.indexOf(startStr) + startStr.length
-            return str.substring(pos, str.indexOf(endStr, pos))
-          }
-          const start = '["'
-          const end = '"]'
-          const fileUrl = getStringBetween(start, end, example)
+          // const getStringBetween = function (startStr, endStr, str) {
+          //   const pos = str.indexOf(startStr) + startStr.length
+          //   return str.substring(pos, str.indexOf(endStr, pos))
+          // }
+          // const start = '["'
+          // const end = '"]'
+          // const fileUrl = getStringBetween(start, end, example)
 
           header = {
             format: format,
             params: [
               {
-                key: 1,
-                value: fileUrl
+                key: 'url',
+                value: 'https://assets.qontak.com/uploads/direct/images/c52871da-a559-4106-ad14-4bd05ca04a06/career_succes_AUD.jpeg'
+              }, {
+                key: 'banner',
+                value: 'banner.png'
               }
             ]
           }
