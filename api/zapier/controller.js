@@ -84,14 +84,22 @@ class ZapierController {
       this.webhooksModel.create(eventData)
 
       // get contact
+      const programRecomended = this.request.body.Program_Recommended
       const contact = {
         name: this.request.body?.Full_Name || '',
         phoneNumber: this.request.body?.Mobile || this.request.body?.Phone || ''
       }
 
+      if ((!programRecomended || programRecomended === '') || contact.name === '' || contact.phoneNumber === '') {
+        return SEND_RESPONSE.success({
+          res: this.res,
+          statusCode: HTTP_RESPONSE.status.ok,
+          message: 'No action'
+        })
+      }
+
       // get template
       let templateId
-      const programRecomended = this.request.body.Program_Recommended
       if (programRecomended) {
         // get configuration
         const getClientConfiguration = await this.clientsConfigurationsModel
@@ -222,12 +230,7 @@ class ZapierController {
       return SEND_RESPONSE.success({
         res: this.res,
         statusCode: HTTP_RESPONSE.status.ok,
-        // data: sendMessage
-        data: {
-          // templateIs
-          // messageData
-          sendMessage
-        }
+        data: sendMessage
       })
     } catch (error) {
       return SEND_RESPONSE.error({ res: this.res, statusCode: HTTP_RESPONSE.status.internalServerError, error })
